@@ -345,7 +345,8 @@ suite('Data Science - Native Editor', () => {
             localStorage,
             instance(crypto),
             context.object,
-            instance(reporter)
+            instance(reporter),
+            instance(experimentsManager)
         );
     }
 
