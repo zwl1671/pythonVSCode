@@ -14,6 +14,7 @@ import { ServerStatus } from '../../../datascience-ui/interactive-common/mainSta
 import { IApplicationShell, ICommandManager, IDocumentManager, ILiveShareApi, IWebPanelProvider, IWorkspaceService } from '../../common/application/types';
 import { CancellationError } from '../../common/cancellation';
 import { EXTENSION_ROOT_DIR, PYTHON_LANGUAGE } from '../../common/constants';
+import { WebHostNotebook } from '../../common/experimentGroups';
 import { traceError, traceInfo, traceWarning } from '../../common/logger';
 import { IFileSystem } from '../../common/platform/types';
 import { IConfigurationService, IDisposableRegistry, IExperimentsManager } from '../../common/types';
@@ -71,7 +72,6 @@ import {
 } from '../types';
 import { WebViewHost } from '../webViewHost';
 import { InteractiveWindowMessageListener } from './interactiveWindowMessageListener';
-import { WebHostNotebook } from '../../common/experimentGroups';
 
 @injectable()
 export abstract class InteractiveBase extends WebViewHost<IInteractiveWindowMapping> implements IInteractiveBase {
