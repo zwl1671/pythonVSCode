@@ -91,7 +91,7 @@
         "max": 100
     },
     {
-        "name": "WebHostNotebook - enabled",
+        "name": "WebHostNotebook - experiment",
         "salt": "WebHostNotebook",
         "max": 20,
         "min": 0
