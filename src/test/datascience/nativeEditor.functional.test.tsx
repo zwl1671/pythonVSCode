@@ -806,7 +806,7 @@ for _ in range(50):
                 await update;
 
                 // Monaco editor should be rendered and the cell should be markdown
-                assert.ok(isCellFocused(wrapper, 'NativeCell', 0));
+                assert.ok(!isCellFocused(wrapper, 'NativeCell', 0));
                 assert.ok(isCellMarkdown(wrapper, 'NativeCell', 0));
                 assert.equal(
                     wrapper
@@ -1356,7 +1356,7 @@ for _ in range(50):
                 await update;
 
                 // Monaco editor should be rendered and the cell should be markdown
-                assert.ok(isCellFocused(wrapper, 'NativeCell', 1), '1st cell is not focused');
+                assert.ok(!isCellFocused(wrapper, 'NativeCell', 1), '1st cell is not focused');
                 assert.ok(isCellMarkdown(wrapper, 'NativeCell', 1), '1st cell is not markdown');
                 assert.equal(
                     wrapper
@@ -1398,7 +1398,7 @@ for _ in range(50):
                 wrapperElement.simulate('keyDown', { key: 'y' });
                 await update;
 
-                assert.ok(isCellFocused(wrapper, 'NativeCell', 1), '1st cell is not focused 2nd time');
+                assert.ok(!isCellFocused(wrapper, 'NativeCell', 1), '1st cell is not focused 2nd time');
                 assert.ok(!isCellMarkdown(wrapper, 'NativeCell', 1), '1st cell is markdown second time');
 
                 // Confirm editor still has the same text
