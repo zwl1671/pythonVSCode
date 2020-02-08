@@ -9,8 +9,6 @@ import { Event, EventEmitter, Memento, Uri, ViewColumn, WebviewPanel } from 'vsc
 
 import * as uuid from 'uuid/v4';
 import { createCodeCell, createErrorOutput } from '../../../datascience-ui/common/cellFactory';
-import { CursorPos } from '../../../datascience-ui/interactive-common/mainState';
-import { CommonActionType } from '../../../datascience-ui/interactive-common/redux/reducers/types';
 import { IApplicationShell, ICommandManager, IDocumentManager, ILiveShareApi, IWebPanelProvider, IWorkspaceService } from '../../common/application/types';
 import { ContextKey } from '../../common/contextKey';
 import { traceError } from '../../common/logger';
@@ -242,10 +240,7 @@ export class NativeEditor extends InteractiveBase implements INotebookEditor {
     }
 
     public addCellBelow() {
-        const newCellId = uuid();
-        this.postMessage(InteractiveWindowMessages.NotebookAddCellBelow, { newCellId }).ignoreErrors();
-        // tslint:disable-next-line: no-any
-        this.postMessage(CommonActionType.FOCUS_CELL, { cellId: newCellId, cursorPos: CursorPos.Top } as any).ignoreErrors();
+        this.postMessage(InteractiveWindowMessages.NotebookAddCellBelow, { newCellId: uuid() }).ignoreErrors();
     }
 
     protected addSysInfo(_reason: SysInfoReason): Promise<void> {
