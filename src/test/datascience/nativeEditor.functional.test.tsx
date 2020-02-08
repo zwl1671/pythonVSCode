@@ -1088,7 +1088,7 @@ for _ in range(50):
                 // Confirm it is no longer focused, and it is selected.
                 assert.equal(isCellSelected(wrapper, 'NativeCell', 1), true);
                 assert.equal(isCellFocused(wrapper, 'NativeCell', 1), false);
-            });
+            }).retries(3);
 
             test("Pressing 'Shift+Enter' on a selected cell executes the cell and advances to the next cell", async () => {
                 let update = waitForUpdate(wrapper, NativeEditor, 1);
