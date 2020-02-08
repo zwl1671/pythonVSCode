@@ -308,7 +308,7 @@ export class NativeCell extends React.Component<INativeCellProps> {
                 if (!this.isFocused()) {
                     e.stopPropagation();
                     e.preventDefault();
-                    this.props.insertAbove(cellId);
+                    setTimeout(() => this.props.insertAbove(cellId), 1);
                     this.props.sendCommand(NativeCommandType.InsertAbove, 'keyboard');
                 }
                 break;
@@ -316,7 +316,7 @@ export class NativeCell extends React.Component<INativeCellProps> {
                 if (!this.isFocused()) {
                     e.stopPropagation();
                     e.preventDefault();
-                    this.props.insertBelow(cellId);
+                    setTimeout(() => this.props.insertBelow(cellId), 1);
                     this.props.sendCommand(NativeCommandType.InsertBelow, 'keyboard');
                 }
                 break;
@@ -423,7 +423,7 @@ export class NativeCell extends React.Component<INativeCellProps> {
     };
 
     private addNewCell = () => {
-        this.props.insertBelow(this.cellId);
+        setTimeout(() => this.props.insertBelow(this.cellId), 1);
         this.props.sendCommand(NativeCommandType.AddToEnd, 'mouse');
     };
 
