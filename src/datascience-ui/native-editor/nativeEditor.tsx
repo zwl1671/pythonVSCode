@@ -386,7 +386,8 @@ export class NativeEditor extends React.Component<INativeEditorProps> {
                         editorOptions={this.props.editorOptions}
                         enableGather={this.props.settings.enableGather}
                         themeMatplotlibPlots={this.props.settings.themeMatplotlibPlots}
-                        focusPending={this.props.activateCount}
+                        // Focus pending does not apply to native editor.
+                        focusPending={0}
                     />
                 </ErrorBoundary>
                 {lastLine}

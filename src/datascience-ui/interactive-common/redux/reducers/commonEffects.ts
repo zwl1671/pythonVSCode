@@ -41,6 +41,7 @@ export namespace CommonEffects {
     export function activate(arg: CommonReducerArg): IMainState {
         return {
             ...arg.prevState,
+            // This is only applicable for interactive window & not native editor.
             activateCount: arg.prevState.activateCount + 1
         };
     }
