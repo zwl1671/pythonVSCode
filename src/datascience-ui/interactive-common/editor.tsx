@@ -90,6 +90,10 @@ export class Editor extends React.Component<IEditorProps, IEditorState> {
         return '';
     }
 
+    public getModelId(): string | undefined {
+        return this.state.model?.id;
+    }
+
     private renderQuickEditor = (): JSX.Element => {
         const readOnly = this.props.readOnly;
         return (

@@ -3,7 +3,6 @@
 'use strict';
 // tslint:disable-next-line: no-require-imports no-var-requires
 const cloneDeep = require('lodash/cloneDeep');
-import { CellMatcher } from '../../../../client/datascience/cellMatcher';
 import { InteractiveWindowMessages } from '../../../../client/datascience/interactive-common/interactiveWindowTypes';
 import { CellState } from '../../../../client/datascience/types';
 import { concatMultilineStringInput } from '../../../common';
@@ -15,7 +14,6 @@ import {
     CommonActionType,
     ICellAction,
     IChangeCellTypeAction,
-    ICodeAction,
     IExecuteAction
 } from '../../../interactive-common/redux/reducers/types';
 import { QueueAnotherFunc } from '../../../react-common/reduxUtils';
@@ -28,34 +26,27 @@ export namespace Execution {
         prevState: IMainState,
         start: number,
         end: number,
-        codes: string[],
         queueAction: QueueAnotherFunc<CommonActionType>
     ): IMainState {
         const newVMs = [...prevState.cellVMs];
-        const cellsToExecute = [];
+        const cellIdsToExecute: string[] = [];
         for (let pos = start; pos <= end; pos += 1) {
             const orig = prevState.cellVMs[pos];
-            const code = codes[pos - start];
-            // noop if the submitted code is just a cell marker
-            const matcher = new CellMatcher(prevState.settings);
-            if (code && matcher.stripFirstMarker(code).length > 0) {
+            if (orig.cell.data.source) {
                 // When cloning cells, preserve the metadata (hence deep clone).
                 const clonedCell = cloneDeep(orig.cell.data);
-                clonedCell.source = code;
                 if (orig.cell.data.cell_type === 'code') {
                     // Update our input cell to be in progress again and clear outputs
                     clonedCell.outputs = [];
                     newVMs[pos] = Helpers.asCellViewModel({
                         ...orig,
-                        inputBlockText: code,
                         cell: { ...orig.cell, state: CellState.executing, data: clonedCell }
                     });
-                    cellsToExecute.push({ cell: orig.cell, code });
+                    cellIdsToExecute.push(orig.cell.id);
                 } else {
                     // Update our input to be our new code
                     newVMs[pos] = Helpers.asCellViewModel({
                         ...orig,
-                        inputBlockText: code,
                         cell: { ...orig.cell, data: clonedCell }
                     });
                 }
@@ -63,11 +54,11 @@ export namespace Execution {
         }
 
         // If any cells to execute, execute them all
-        if (cellsToExecute) {
+        if (cellIdsToExecute) {
             // Send a message to reexecute all of the cells in the range
             queueAction(
                 createPostableAction(InteractiveWindowMessages.ReExecuteCells, {
-                    entries: cellsToExecute
+                    cellIds: cellIdsToExecute
                 })
             );
         }
@@ -81,10 +72,7 @@ export namespace Execution {
     export function executeAbove(arg: NativeEditorReducerArg<ICellAction>): IMainState {
         const index = arg.prevState.cellVMs.findIndex(c => c.cell.id === arg.payload.cellId);
         if (index > 0) {
-            const codes = arg.prevState.cellVMs
-                .filter((_c, i) => i < index)
-                .map(c => concatMultilineStringInput(c.cell.data.source));
-            return executeRange(arg.prevState, 0, index - 1, codes, arg.queueAction);
+            return executeRange(arg.prevState, 0, index - 1, arg.queueAction);
         }
         return arg.prevState;
     }
@@ -93,7 +81,7 @@ export namespace Execution {
         const index = arg.prevState.cellVMs.findIndex(c => c.cell.id === arg.payload.cellId);
         if (index >= 0) {
             // Start executing this cell.
-            const executeResult = executeRange(arg.prevState, index, index, [arg.payload.code], arg.queueAction);
+            const executeResult = executeRange(arg.prevState, index, index, arg.queueAction);
 
             // Modify the execute result if moving
             switch (arg.payload.moveOp) {
@@ -128,19 +116,13 @@ export namespace Execution {
         return arg.prevState;
     }
 
-    export function executeCellAndBelow(arg: NativeEditorReducerArg<ICodeAction>): IMainState {
+    export function executeCellAndBelow(arg: NativeEditorReducerArg<ICellAction>): IMainState {
         const index = arg.prevState.cellVMs.findIndex(c => c.cell.id === arg.payload.cellId);
         if (index >= 0) {
             const codes = arg.prevState.cellVMs
                 .filter((_c, i) => i > index)
                 .map(c => concatMultilineStringInput(c.cell.data.source));
-            return executeRange(
-                arg.prevState,
-                index,
-                index + codes.length,
-                [arg.payload.code, ...codes],
-                arg.queueAction
-            );
+            return executeRange(arg.prevState, index, index + codes.length, arg.queueAction);
         }
         return arg.prevState;
     }
@@ -152,8 +134,7 @@ export namespace Execution {
             return executeCellAndBelow({
                 ...arg,
                 payload: {
-                    cellId: firstCell,
-                    code: concatMultilineStringInput(arg.prevState.cellVMs[0].cell.data.source)
+                    cellId: firstCell
                 }
             });
         }
@@ -169,7 +150,6 @@ export namespace Execution {
                 ...arg,
                 payload: {
                     cellId: arg.prevState.selectedCellId,
-                    code: concatMultilineStringInput(arg.prevState.cellVMs[index].cell.data.source),
                     moveOp: 'none'
                 }
             });

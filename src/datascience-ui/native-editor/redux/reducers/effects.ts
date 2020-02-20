@@ -6,7 +6,7 @@ import { IDataScienceExtraSettings } from '../../../../client/datascience/types'
 import { IMainState } from '../../../interactive-common/mainState';
 import { createPostableAction } from '../../../interactive-common/redux/postOffice';
 import { Helpers } from '../../../interactive-common/redux/reducers/helpers';
-import { ICellAction, ICellAndCursorAction, ICodeAction } from '../../../interactive-common/redux/reducers/types';
+import { ICellAction, ICellAndCursorAction } from '../../../interactive-common/redux/reducers/types';
 import { computeEditorOptions } from '../../../react-common/settingsReactSide';
 import { NativeEditorReducerArg } from '../mapping';
 
@@ -23,12 +23,10 @@ export namespace Effects {
             }
 
             if (removeFocusIndex >= 0) {
-                const oldFocusCell = prevState.cellVMs[removeFocusIndex];
-                const oldCode = oldFocusCell.uncomittedText || oldFocusCell.inputBlockText;
                 prevState = unfocusCell({
                     ...arg,
                     prevState,
-                    payload: { cellId: prevState.cellVMs[removeFocusIndex].cell.id, code: oldCode }
+                    payload: { cellId: prevState.cellVMs[removeFocusIndex].cell.id }
                 });
                 prevState = deselectCell({
                     ...arg,
@@ -61,7 +59,7 @@ export namespace Effects {
         return arg.prevState;
     }
 
-    export function unfocusCell(arg: NativeEditorReducerArg<ICodeAction>): IMainState {
+    export function unfocusCell(arg: NativeEditorReducerArg<ICellAction>): IMainState {
         // Unfocus the cell
         const index = arg.prevState.cellVMs.findIndex(c => c.cell.id === arg.payload.cellId);
         if (index >= 0 && arg.prevState.focusedCellId === arg.payload.cellId) {
@@ -69,15 +67,7 @@ export namespace Effects {
             const current = arg.prevState.cellVMs[index];
             const newCell = {
                 ...current,
-                inputBlockText: arg.payload.code,
-                focused: false,
-                cell: {
-                    ...current.cell,
-                    data: {
-                        ...current.cell.data,
-                        source: arg.payload.code
-                    }
-                }
+                focused: false
             };
 
             // tslint:disable-next-line: no-any
@@ -93,15 +83,7 @@ export namespace Effects {
             const newVMs = [...arg.prevState.cellVMs];
             const current = arg.prevState.cellVMs[index];
             const newCell = {
-                ...current,
-                inputBlockText: arg.payload.code,
-                cell: {
-                    ...current.cell,
-                    data: {
-                        ...current.cell.data,
-                        source: arg.payload.code
-                    }
-                }
+                ...current
             };
 
             // tslint:disable-next-line: no-any
@@ -163,12 +145,10 @@ export namespace Effects {
             }
 
             if (removeFocusIndex >= 0) {
-                const oldFocusCell = prevState.cellVMs[removeFocusIndex];
-                const oldCode = oldFocusCell.uncomittedText || oldFocusCell.inputBlockText;
                 prevState = unfocusCell({
                     ...arg,
                     prevState,
-                    payload: { cellId: prevState.cellVMs[removeFocusIndex].cell.id, code: oldCode }
+                    payload: { cellId: prevState.cellVMs[removeFocusIndex].cell.id }
                 });
                 prevState = deselectCell({
                     ...arg,

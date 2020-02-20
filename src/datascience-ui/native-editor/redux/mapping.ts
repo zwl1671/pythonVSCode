@@ -12,7 +12,6 @@ import {
     ICellAction,
     ICellAndCursorAction,
     IChangeCellTypeAction,
-    ICodeAction,
     IEditCellAction,
     IExecuteAction,
     ILinkClickAction,
@@ -31,12 +30,12 @@ export class INativeEditorActionMapping {
     public [CommonActionType.INSERT_BELOW]: NativeEditorReducerFunc<ICellAction>;
     public [CommonActionType.INSERT_ABOVE_FIRST]: NativeEditorReducerFunc<never | undefined>;
     public [CommonActionType.FOCUS_CELL]: NativeEditorReducerFunc<ICellAndCursorAction>;
-    public [CommonActionType.UNFOCUS_CELL]: NativeEditorReducerFunc<ICodeAction>;
+    public [CommonActionType.UNFOCUS_CELL]: NativeEditorReducerFunc<ICellAction>;
     public [CommonActionType.ADD_NEW_CELL]: NativeEditorReducerFunc<never | undefined>;
     public [CommonActionType.EXECUTE_CELL]: NativeEditorReducerFunc<IExecuteAction>;
     public [CommonActionType.EXECUTE_ALL_CELLS]: NativeEditorReducerFunc<never | undefined>;
     public [CommonActionType.EXECUTE_ABOVE]: NativeEditorReducerFunc<ICellAction>;
-    public [CommonActionType.EXECUTE_CELL_AND_BELOW]: NativeEditorReducerFunc<ICodeAction>;
+    public [CommonActionType.EXECUTE_CELL_AND_BELOW]: NativeEditorReducerFunc<ICellAction>;
     public [CommonActionType.RESTART_KERNEL]: NativeEditorReducerFunc<never | undefined>;
     public [CommonActionType.INTERRUPT_KERNEL]: NativeEditorReducerFunc<never | undefined>;
     public [CommonActionType.CLEAR_ALL_OUTPUTS]: NativeEditorReducerFunc<never | undefined>;
@@ -52,8 +51,8 @@ export class INativeEditorActionMapping {
     public [CommonActionType.TOGGLE_LINE_NUMBERS]: NativeEditorReducerFunc<ICellAction>;
     public [CommonActionType.TOGGLE_OUTPUT]: NativeEditorReducerFunc<ICellAction>;
     public [CommonActionType.DELETE_CELL]: NativeEditorReducerFunc<ICellAction>;
-    public [CommonActionType.ARROW_UP]: NativeEditorReducerFunc<ICodeAction>;
-    public [CommonActionType.ARROW_DOWN]: NativeEditorReducerFunc<ICodeAction>;
+    public [CommonActionType.ARROW_UP]: NativeEditorReducerFunc<ICellAction>;
+    public [CommonActionType.ARROW_DOWN]: NativeEditorReducerFunc<ICellAction>;
     public [CommonActionType.CHANGE_CELL_TYPE]: NativeEditorReducerFunc<IChangeCellTypeAction>;
     public [CommonActionType.EDIT_CELL]: NativeEditorReducerFunc<IEditCellAction>;
     public [CommonActionType.LINK_CLICK]: NativeEditorReducerFunc<ILinkClickAction>;

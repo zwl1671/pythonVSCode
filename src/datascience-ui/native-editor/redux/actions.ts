@@ -12,7 +12,6 @@ import {
     ICellAction,
     ICellAndCursorAction,
     IChangeCellTypeAction,
-    ICodeAction,
     ICodeCreatedAction,
     IEditCellAction,
     IExecuteAction,
@@ -38,27 +37,27 @@ export const actionCreators = {
         type: CommonActionType.FOCUS_CELL,
         payload: { cellId, cursorPos }
     }),
-    unfocusCell: (cellId: string, code: string): CommonAction<ICodeAction> => ({
+    unfocusCell: (cellId: string): CommonAction<ICellAction> => ({
         type: CommonActionType.UNFOCUS_CELL,
-        payload: { cellId, code }
+        payload: { cellId }
     }),
     selectCell: (cellId: string, cursorPos: CursorPos = CursorPos.Current): CommonAction<ICellAndCursorAction> => ({
         type: CommonActionType.SELECT_CELL,
         payload: { cellId, cursorPos }
     }),
     addCell: (): CommonAction<never | undefined> => ({ type: CommonActionType.ADD_NEW_CELL }),
-    executeCell: (cellId: string, code: string, moveOp: 'add' | 'select' | 'none'): CommonAction<IExecuteAction> => ({
+    executeCell: (cellId: string, moveOp: 'add' | 'select' | 'none'): CommonAction<IExecuteAction> => ({
         type: CommonActionType.EXECUTE_CELL,
-        payload: { cellId, code, moveOp }
+        payload: { cellId, moveOp }
     }),
     executeAllCells: (): CommonAction<never | undefined> => ({ type: CommonActionType.EXECUTE_ALL_CELLS }),
     executeAbove: (cellId: string): CommonAction<ICellAction> => ({
         type: CommonActionType.EXECUTE_ABOVE,
         payload: { cellId }
     }),
-    executeCellAndBelow: (cellId: string, code: string): CommonAction<ICodeAction> => ({
+    executeCellAndBelow: (cellId: string): CommonAction<ICellAction> => ({
         type: CommonActionType.EXECUTE_CELL_AND_BELOW,
-        payload: { cellId, code }
+        payload: { cellId }
     }),
     toggleVariableExplorer: (): CommonAction<never | undefined> => ({
         type: CommonActionType.TOGGLE_VARIABLE_EXPLORER
@@ -106,13 +105,13 @@ export const actionCreators = {
     }),
     undo: (): CommonAction<never | undefined> => ({ type: CommonActionType.UNDO }),
     redo: (): CommonAction<never | undefined> => ({ type: CommonActionType.REDO }),
-    arrowUp: (cellId: string, code: string): CommonAction<ICodeAction> => ({
+    arrowUp: (cellId: string): CommonAction<ICellAction> => ({
         type: CommonActionType.ARROW_UP,
-        payload: { cellId, code }
+        payload: { cellId }
     }),
-    arrowDown: (cellId: string, code: string): CommonAction<ICodeAction> => ({
+    arrowDown: (cellId: string): CommonAction<ICellAction> => ({
         type: CommonActionType.ARROW_DOWN,
-        payload: { cellId, code }
+        payload: { cellId }
     }),
     editCell: (
         cellId: string,

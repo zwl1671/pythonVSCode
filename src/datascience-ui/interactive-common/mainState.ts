@@ -38,7 +38,7 @@ export interface ICellViewModel {
     cursorPos: CursorPos;
     hasBeenRun: boolean;
     runDuringDebug?: boolean;
-    uncomittedText?: string;
+    modelId?: string;
 }
 
 export type IMainState = {

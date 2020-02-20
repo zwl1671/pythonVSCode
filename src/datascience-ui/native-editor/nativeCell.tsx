@@ -365,14 +365,14 @@ export class NativeCell extends React.Component<INativeCellProps> {
     private arrowUpFromCell = (e: IKeyboardEvent) => {
         e.stopPropagation();
         e.preventDefault();
-        this.props.arrowUp(this.cellId, this.getCurrentCode());
+        this.props.arrowUp(this.cellId);
         this.props.sendCommand(NativeCommandType.ArrowUp, 'keyboard');
     };
 
     private arrowDownFromCell = (e: IKeyboardEvent) => {
         e.stopPropagation();
         e.preventDefault();
-        this.props.arrowDown(this.cellId, this.getCurrentCode());
+        this.props.arrowDown(this.cellId);
         this.props.sendCommand(NativeCommandType.ArrowDown, 'keyboard');
     };
 
@@ -440,7 +440,7 @@ export class NativeCell extends React.Component<INativeCellProps> {
 
         // Send to jupyter
         if (content) {
-            this.props.executeCell(this.cellId, content, moveOp);
+            this.props.executeCell(this.cellId, moveOp);
         }
     };
 
@@ -658,7 +658,7 @@ export class NativeCell extends React.Component<INativeCellProps> {
 
     private onCodeUnfocused = () => {
         // Make sure to save the code from the editor into the cell
-        this.props.unfocusCell(this.cellId, this.getCurrentCode());
+        this.props.unfocusCell(this.cellId);
     };
 
     private onCodeChange = (changes: monacoEditor.editor.IModelContentChange[], cellId: string, modelId: string) => {

@@ -108,7 +108,7 @@ export interface IEditCellAction extends ICodeAction {
     modelId: string;
 }
 
-export interface IExecuteAction extends ICodeAction {
+export interface IExecuteAction extends ICellAction {
     moveOp: 'add' | 'select' | 'none';
 }
 

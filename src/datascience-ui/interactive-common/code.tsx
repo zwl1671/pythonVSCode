@@ -18,6 +18,7 @@ export interface ICodeProps {
     history: InputHistory | undefined;
     showWatermark: boolean;
     monacoTheme: string | undefined;
+    modelId?: string;
     outermostParentClass: string;
     editorOptions?: monacoEditor.editor.IEditorOptions;
     editorMeasureClassName?: string;
@@ -96,6 +97,10 @@ export class Code extends React.Component<ICodeProps, ICodeState> {
         if (this.editorRef.current) {
             return this.editorRef.current.getContents();
         }
+    }
+
+    public getModelId(): string | undefined {
+        return this.editorRef.current?.getModelId();
     }
 
     private giveFocus(cursorPos: CursorPos) {

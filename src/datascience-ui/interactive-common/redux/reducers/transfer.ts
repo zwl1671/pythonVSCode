@@ -3,7 +3,7 @@
 'use strict';
 import { InteractiveWindowMessages } from '../../../../client/datascience/interactive-common/interactiveWindowTypes';
 import { CssMessages } from '../../../../client/datascience/messages';
-import { extractInputText, IMainState } from '../../mainState';
+import { extractInputText, ICellViewModel, IMainState } from '../../mainState';
 import { createPostableAction } from '../postOffice';
 import { Helpers } from './helpers';
 import {
@@ -136,9 +136,16 @@ export namespace Transfer {
             if (index >= 0 && arg.prevState.focusedCellId === arg.payload.cellId) {
                 const newVMs = [...arg.prevState.cellVMs];
                 const current = arg.prevState.cellVMs[index];
-                const newCell = {
+                const newCell: ICellViewModel = {
                     ...current,
-                    uncomittedText: arg.payload.code
+                    cell: {
+                        ...current.cell,
+                        data: {
+                            ...current.cell.data,
+                            source: arg.payload.code
+                        }
+                    },
+                    modelId: arg.payload.modelId
                 };
 
                 // tslint:disable-next-line: no-any

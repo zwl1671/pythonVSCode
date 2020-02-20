@@ -59,7 +59,13 @@ export class CellInput extends React.Component<ICellInputProps> {
             return this.markdownRef.current.getContents();
         }
     }
-
+    public getModelId(): string | undefined {
+        if (this.codeRef.current) {
+            return this.codeRef.current.getModelId();
+        } else if (this.markdownRef.current) {
+            return this.markdownRef.current.getModelId();
+        }
+    }
     private isCodeCell = () => {
         return this.props.cellVM.cell.data.cell_type === 'code';
     };
@@ -104,6 +110,7 @@ export class CellInput extends React.Component<ICellInputProps> {
                         openLink={this.props.openLink}
                         hasFocus={this.props.cellVM.focused}
                         cursorPos={this.props.cellVM.cursorPos}
+                        modelId={this.props.cellVM.modelId}
                         editorMeasureClassName={this.props.editorMeasureClassName}
                         focused={this.onCodeFocused}
                         unfocused={this.onCodeUnfocused}

@@ -5,7 +5,6 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { OSType } from '../../client/common/utils/platform';
 import { NativeCommandType } from '../../client/datascience/interactive-common/interactiveWindowTypes';
-import { concatMultilineStringInput } from '../common';
 import { buildSettingsCss } from '../interactive-common/buildSettingsCss';
 import { ContentPanel, IContentPanelProps } from '../interactive-common/contentPanel';
 import { handleLinkClick } from '../interactive-common/handlers';
@@ -151,10 +150,7 @@ ${buildSettingsCss(this.props.settings)}`}</style>
             if (this.props.selectedCellId) {
                 // tslint:disable-next-line: no-suspicious-comment
                 // TODO: Is the source going to be up to date during run below?
-                this.props.executeCellAndBelow(
-                    this.props.selectedCellId,
-                    concatMultilineStringInput(this.props.cellVMs[selectedIndex].cell.data.source)
-                );
+                this.props.executeCellAndBelow(this.props.selectedCellId);
                 this.props.sendCommand(NativeCommandType.RunBelow, 'mouse');
             }
         };

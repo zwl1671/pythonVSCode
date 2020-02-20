@@ -75,6 +75,10 @@ export class Markdown extends React.Component<IMarkdownProps> {
         }
     }
 
+    public getModelId(): string | undefined {
+        return this.editorRef.current?.getModelId();
+    }
+
     private onModelChanged = (
         changes: monacoEditor.editor.IModelContentChange[],
         model: monacoEditor.editor.ITextModel
