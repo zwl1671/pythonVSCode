@@ -75,7 +75,27 @@ export class NativeCell extends React.Component<INativeCellProps> {
     }
 
     public shouldComponentUpdate(nextProps: INativeCellProps): boolean {
-        return !fastDeepEqual(this.props, nextProps);
+        // if something other than cellvm has changed, then update.
+        if (!fastDeepEqual({ ...this.props, cellVM: undefined }, { ...nextProps, cellVM: undefined })) {
+            return true;
+        }
+        // If anything but cell source|modelId has changed, then update.
+        const previousCell = this.props.cellVM;
+        const nextCell = nextProps.cellVM;
+        if (
+            !fastDeepEqual(
+                { ...previousCell, cell: { ...previousCell.cell, data: { ...previousCell.cell.data, source: '' } } },
+                { ...nextCell, cell: { ...nextCell.cell, data: { ...nextCell.cell.data, source: '' } } }
+            )
+        ) {
+            return true;
+        }
+
+        // Possible source has changed.
+        if (nextProps.cellVM.modelId && this.inputRef.current?.getModelId() === nextProps.cellVM.modelId) {
+            return false;
+        }
+        return previousCell.cell.data.source !== nextCell.cell.data.source;
     }
 
     // Public for testing
