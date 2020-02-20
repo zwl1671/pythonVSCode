@@ -138,6 +138,7 @@ export namespace Transfer {
                 const current = arg.prevState.cellVMs[index];
                 const newCell: ICellViewModel = {
                     ...current,
+                    inputBlockText: arg.payload.code,
                     cell: {
                         ...current.cell,
                         data: {

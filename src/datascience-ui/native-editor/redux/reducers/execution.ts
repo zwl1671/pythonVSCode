@@ -5,7 +5,7 @@
 const cloneDeep = require('lodash/cloneDeep');
 import { InteractiveWindowMessages } from '../../../../client/datascience/interactive-common/interactiveWindowTypes';
 import { CellState } from '../../../../client/datascience/types';
-import { concatMultilineStringInput } from '../../../common';
+import { concatMultilineStringInput, concatMultilineStringOutput } from '../../../common';
 import { createCellFrom } from '../../../common/cellFactory';
 import { CursorPos, ICellViewModel, IMainState } from '../../../interactive-common/mainState';
 import { createPostableAction } from '../../../interactive-common/redux/postOffice';
@@ -129,12 +129,12 @@ export namespace Execution {
 
     export function executeAllCells(arg: NativeEditorReducerArg): IMainState {
         // This is the same thing as executing the first cell and all below
-        const firstCell = arg.prevState.cellVMs.length > 0 ? arg.prevState.cellVMs[0].cell.id : undefined;
-        if (firstCell) {
+        const firstCellId = arg.prevState.cellVMs.length > 0 ? arg.prevState.cellVMs[0].cell.id : undefined;
+        if (firstCellId) {
             return executeCellAndBelow({
                 ...arg,
                 payload: {
-                    cellId: firstCell
+                    cellId: firstCellId
                 }
             });
         }
@@ -181,10 +181,8 @@ export namespace Execution {
             const current = arg.prevState.cellVMs[index];
             const newType = current.cell.data.cell_type === 'code' ? 'markdown' : 'code';
             const newNotebookCell = createCellFrom(current.cell.data, newType);
-            newNotebookCell.source = arg.payload.currentCode;
             const newCell: ICellViewModel = {
                 ...current,
-                inputBlockText: arg.payload.currentCode,
                 cell: {
                     ...current.cell,
                     data: newNotebookCell
@@ -197,7 +195,7 @@ export namespace Execution {
                     createPostableAction(InteractiveWindowMessages.InsertCell, {
                         cell: cellVMs[index].cell,
                         index,
-                        code: arg.payload.currentCode,
+                        code: concatMultilineStringOutput(newCell.cell.data.source),
                         codeCellAboveId: Helpers.firstCodeCellAbove(arg.prevState, current.cell.id)
                     })
                 );

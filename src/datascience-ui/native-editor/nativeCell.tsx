@@ -268,7 +268,7 @@ export class NativeCell extends React.Component<INativeCellProps> {
                 if (!this.isFocused() && this.isSelected() && this.isMarkdownCell()) {
                     e.stopPropagation();
                     e.preventDefault();
-                    this.props.changeCellType(cellId, this.getCurrentCode());
+                    this.props.changeCellType(cellId);
                     this.props.sendCommand(NativeCommandType.ChangeToCode, 'keyboard');
                 }
                 break;
@@ -276,7 +276,7 @@ export class NativeCell extends React.Component<INativeCellProps> {
                 if (!this.isFocused() && this.isSelected() && this.isCodeCell()) {
                     e.stopPropagation();
                     e.preventDefault();
-                    this.props.changeCellType(cellId, this.getCurrentCode());
+                    this.props.changeCellType(cellId);
                     this.props.sendCommand(NativeCommandType.ChangeToMarkdown, 'keyboard');
                 }
                 break;
@@ -554,7 +554,7 @@ export class NativeCell extends React.Component<INativeCellProps> {
             // can give focus to the cell input.
             event.stopPropagation();
             event.preventDefault();
-            this.props.changeCellType(cellId, this.getCurrentCode());
+            this.props.changeCellType(cellId);
             this.props.sendCommand(otherCellTypeCommand, 'mouse');
         };
         const toolbarClassName = this.props.cellVM.cell.data.cell_type === 'code' ? '' : 'markdown-toolbar';

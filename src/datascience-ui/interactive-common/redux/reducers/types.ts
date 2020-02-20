@@ -133,6 +133,5 @@ export interface ISendCommandAction {
 
 export interface IChangeCellTypeAction {
     cellId: string;
-    currentCode: string;
 }
 export type CommonAction<T> = ActionWithPayload<T, CommonActionType>;

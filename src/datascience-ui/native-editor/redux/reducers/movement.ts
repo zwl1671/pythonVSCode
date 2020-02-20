@@ -60,10 +60,6 @@ export namespace Movement {
                 payload: { cellId: arg.prevState.cellVMs[index - 1].cell.id, cursorPos: CursorPos.Bottom }
             });
             const newVMs = [...newState.cellVMs];
-            newVMs[index] = Helpers.asCellViewModel({
-                ...newVMs[index],
-                cell: { ...newVMs[index].cell, data: { ...newVMs[index].cell.data } }
-            });
             return {
                 ...newState,
                 cellVMs: newVMs
@@ -81,10 +77,6 @@ export namespace Movement {
                 payload: { cellId: arg.prevState.cellVMs[index + 1].cell.id, cursorPos: CursorPos.Top }
             });
             const newVMs = [...newState.cellVMs];
-            newVMs[index] = Helpers.asCellViewModel({
-                ...newVMs[index],
-                cell: { ...newVMs[index].cell, data: { ...newVMs[index].cell.data } }
-            });
             return {
                 ...newState,
                 cellVMs: newVMs

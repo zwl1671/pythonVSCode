@@ -87,9 +87,9 @@ export const actionCreators = {
         type: CommonActionType.MOVE_CELL_DOWN,
         payload: { cellId }
     }),
-    changeCellType: (cellId: string, currentCode: string): CommonAction<IChangeCellTypeAction> => ({
+    changeCellType: (cellId: string): CommonAction<IChangeCellTypeAction> => ({
         type: CommonActionType.CHANGE_CELL_TYPE,
-        payload: { cellId, currentCode }
+        payload: { cellId }
     }),
     toggleLineNumbers: (cellId: string): CommonAction<ICellAction> => ({
         type: CommonActionType.TOGGLE_LINE_NUMBERS,
