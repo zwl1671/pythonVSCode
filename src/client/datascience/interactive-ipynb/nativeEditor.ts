@@ -217,10 +217,11 @@ export class NativeEditor extends InteractiveBase implements INotebookEditor {
 
     public dispose(): Promise<void> {
         super.dispose();
+        this.model?.dispose();
         return this.close();
     }
 
-    public async load(model: INotebookModel, webViewPanel: WebviewPanel): Promise<void> {
+    public async load(model: INotebookModel, _webViewPanel: WebviewPanel): Promise<void> {
         // Save the model we're using
         this.model = model;
 
@@ -229,7 +230,7 @@ export class NativeEditor extends InteractiveBase implements INotebookEditor {
 
         // Load the web panel using our file path so it can find
         // relative files next to the notebook.
-        await super.loadWebPanel(path.dirname(this.file.fsPath), webViewPanel);
+        // await super.loadWebPanel(path.dirname(this.file.fsPath), webViewPanel);
 
         // Sign up for dirty events
         model.changed(this.modelChanged.bind(this));
@@ -297,7 +298,7 @@ export class NativeEditor extends InteractiveBase implements INotebookEditor {
     public async getNotebookMetadata(): Promise<nbformat.INotebookMetadata | undefined> {
         await this.loadedPromise.promise;
         if (this.model) {
-            return (await this.model.getJson()).metadata;
+            return this.model.metadata;
         }
     }
 
@@ -634,7 +635,7 @@ export class NativeEditor extends InteractiveBase implements INotebookEditor {
     }
 
     @captureTelemetry(Telemetry.ConvertToPythonFile, undefined, false)
-    private async export(cells: ICell[]): Promise<void> {
+    private async export(): Promise<void> {
         const status = this.setStatus(localize.DataScience.convertingToPythonFile(), false);
         // First generate a temporary notebook with these cells.
         let tempFile: TemporaryFile | undefined;
@@ -642,7 +643,7 @@ export class NativeEditor extends InteractiveBase implements INotebookEditor {
             tempFile = await this.fileSystem.createTemporaryFile('.ipynb');
 
             // Translate the cells into a notebook
-            const content = this.model ? await this.model.getContent(cells) : '';
+            const content = this.model ? this.model.getContent() : '';
             await this.fileSystem.writeFile(tempFile.filePath, content, 'utf-8');
 
             // Import this file and show it

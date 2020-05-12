@@ -445,12 +445,6 @@ export interface INotebookModelVersionChange extends INotebookModelChange {
     kernelSpec: IJupyterKernelSpec | LiveKernelModel | undefined;
 }
 
-export interface INotebookModelFileChange extends INotebookModelChange {
-    kind: 'file';
-    newFile: Uri;
-    oldFile: Uri;
-}
-
 export type NotebookModelChange =
     | INotebookModelModifyChange
     | INotebookModelRemoveAllChange
@@ -461,7 +455,6 @@ export type NotebookModelChange =
     | INotebookModelAddChange
     | INotebookModelEditChange
     | INotebookModelVersionChange
-    | INotebookModelFileChange
     | INotebookModelChangeTypeChange;
 
 // Map all messages to specific payloads

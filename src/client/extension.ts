@@ -13,7 +13,6 @@ import { initialize } from './sourceMapSupport';
 initialize(require('vscode'));
 // Initialize the logger first.
 require('./common/logger');
-
 //===============================================
 // We start tracking the extension's startup time at this point.  The
 // locations at which we record various Intervals are marked below in

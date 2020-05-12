@@ -41,6 +41,8 @@ import { NativeEditorProvider } from './interactive-ipynb/nativeEditorProvider';
 import { NativeEditorProviderOld } from './interactive-ipynb/nativeEditorProviderOld';
 import { NativeEditorStorage } from './interactive-ipynb/nativeEditorStorage';
 import { NativeEditorSynchronizer } from './interactive-ipynb/nativeEditorSynchronizer';
+import { NativeNotebookEditorProvider } from './interactive-ipynb/nativeNotebookEditorProvider';
+import { INotebookModelProvider, NotebookModelProvider } from './interactive-ipynb/notebookModelProvider';
 import { InteractiveWindow } from './interactive-window/interactiveWindow';
 import { InteractiveWindowCommandListener } from './interactive-window/interactiveWindowCommandListener';
 import { InteractiveWindowProvider } from './interactive-window/interactiveWindowProvider';
@@ -161,7 +163,8 @@ export function registerTypes(serviceManager: IServiceManager) {
     serviceManager.add<INotebookExporter>(INotebookExporter, JupyterExporter);
     serviceManager.add<INotebookImporter>(INotebookImporter, JupyterImporter);
     serviceManager.add<INotebookServer>(INotebookServer, JupyterServerWrapper);
-    serviceManager.add<INotebookStorage>(INotebookStorage, NativeEditorStorage);
+    serviceManager.addSingleton<INotebookStorage>(INotebookStorage, NativeEditorStorage);
+    serviceManager.addSingleton<INotebookModelProvider>(INotebookModelProvider, NotebookModelProvider);
     serviceManager.addSingleton<IRawNotebookProvider>(IRawNotebookProvider, RawNotebookProviderWrapper);
     serviceManager.addSingleton<IJupyterNotebookProvider>(IJupyterNotebookProvider, JupyterNotebookProvider);
     serviceManager.add<IPlotViewer>(IPlotViewer, PlotViewer);
@@ -225,6 +228,7 @@ export function registerTypes(serviceManager: IServiceManager) {
     serviceManager.addSingleton<IKernelDependencyService>(IKernelDependencyService, KernelDependencyService);
     serviceManager.addSingleton<INotebookAndInteractiveWindowUsageTracker>(INotebookAndInteractiveWindowUsageTracker, NotebookAndInteractiveWindowUsageTracker);
     serviceManager.addSingleton<KernelDaemonPreWarmer>(KernelDaemonPreWarmer, KernelDaemonPreWarmer);
+    serviceManager.addSingleton<NativeNotebookEditorProvider>(NativeNotebookEditorProvider, NativeNotebookEditorProvider);
 
     registerGatherTypes(serviceManager);
 }

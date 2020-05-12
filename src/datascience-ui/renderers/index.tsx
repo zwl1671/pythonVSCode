@@ -1,36 +1,76 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
+
 'use strict';
+
 import { nbformat } from '@jupyterlab/coreutils';
 import { JSONObject } from '@phosphor/coreutils';
+import { Widget } from '@phosphor/widgets';
 import ansiRegex from 'ansi-regex';
-import * as fastDeepEqual from 'fast-deep-equal';
+import { cloneDeep } from 'lodash';
 import * as React from 'react';
+import * as ReactDOM from 'react-dom';
 import '../../client/common/extensions';
-import { Identifiers } from '../../client/datascience/constants';
-import { CellState } from '../../client/datascience/types';
+import { noop } from '../../client/common/utils/misc';
+import { WIDGET_MIMETYPE } from '../../client/datascience/ipywidgets/constants';
 import { ClassType } from '../../client/ioc/types';
+import { concatMultilineStringOutput } from '../common';
+import { fixLatexEquations } from '../interactive-common/latexManipulation';
+import {
+    getRichestMimetype,
+    getTransform,
+    isIPyWidgetOutput,
+    isMimeTypeSupported
+} from '../interactive-common/transforms';
 import { WidgetManager } from '../ipywidgets';
 import { Image, ImageName } from '../react-common/image';
 import { ImageButton } from '../react-common/imageButton';
 import { getLocString } from '../react-common/locReactSide';
-import { fixLatexEquations } from './latexManipulation';
-import { ICellViewModel } from './mainState';
-import { getRichestMimetype, getTransform, isIPyWidgetOutput, isMimeTypeSupported } from './transforms';
 
 // tslint:disable-next-line: no-var-requires no-require-imports
 const ansiToHtml = require('ansi-to-html');
 
-// tslint:disable-next-line: no-require-imports no-var-requires
-const cloneDeep = require('lodash/cloneDeep');
-import { Widget } from '@phosphor/widgets';
-import { noop } from '../../client/common/utils/misc';
-import { WIDGET_MIMETYPE } from '../../client/datascience/ipywidgets/constants';
-import { concatMultilineStringInput, concatMultilineStringOutput } from '../common';
-import { TrimmedOutputMessage } from './trimmedOutputLink';
+/**
+ * This is the public API to expose this stuff from within renderers.
+ * Will not export others to minimize management.
+ */
+export function acquirePVSCRendererAPI() {
+    return {
+        renderOutput
+    };
+}
+// tslint:disable-next-line: no-any
+(window as any).renderOutput = renderOutput;
+__webpack_public_path__ =
+    'vscode-resource:///Users/donjayamanne/Desktop/Development/vsc/pythonVSCode/out/datascience-ui/renderers/';
+function renderOutput(tag: HTMLScriptElement, output?: nbformat.IOutput) {
+    let container: HTMLElement;
 
+    // Create an element to render in, or reuse a previous element.
+    if (tag.nextElementSibling instanceof HTMLElement) {
+        container = tag.nextElementSibling;
+        // tslint:disable-next-line: no-inner-html
+        container.innerHTML = '';
+    } else {
+        container = document.createElement('div');
+        tag.parentNode?.insertBefore(container, tag.nextSibling);
+    }
+    if (!output) {
+        console.error(tag.dataset.jsonContainerId);
+        console.error(document.getElementById(tag.dataset.jsonContainerId!)!.innerHTML);
+        output = JSON.parse(document.getElementById(tag.dataset.jsonContainerId!)!.innerHTML) as nbformat.IOutput;
+    }
+    const cellOutputProps: ICellOutputProps = {
+        baseTheme: '',
+        expandImage: noop,
+        widgetFailed: noop,
+        output
+    };
+    // tslint:disable-next-line: no-use-before-declare
+    ReactDOM.render(React.createElement(CellOutput, cellOutputProps, null), container);
+}
 export interface ICellOutputProps {
-    cellVM: ICellViewModel;
+    output: nbformat.IOutput;
     baseTheme: string;
     maxTextSize?: number;
     enableScroll?: boolean;
@@ -55,7 +95,7 @@ interface ICellOutput {
     outputSpanClassName?: string; // Wrap this output in a span with the following className, undefined to not wrap
     doubleClick(): void; // Double click handler for plot viewing is stored here
 }
-// tslint:disable: react-this-binding-issue
+
 export class CellOutput extends React.Component<ICellOutputProps> {
     // tslint:disable-next-line: no-any
     private static get ansiToHtmlClass(): ClassType<any> {
@@ -125,96 +165,23 @@ export class CellOutput extends React.Component<ICellOutputProps> {
     }
     public render() {
         // Only render results if not an edit cell
-        if (this.props.cellVM.cell.id !== Identifiers.EditCellId) {
-            const outputClassNames = this.isCodeCell()
-                ? `cell-output cell-output-${this.props.baseTheme}`
-                : 'markdown-cell-output-container';
+        const outputClassNames = this.isCodeCell()
+            ? `cell-output cell-output-${this.props.baseTheme}`
+            : 'markdown-cell-output-container';
 
-            // Then combine them inside a div. IPyWidget ref has to be separate so we don't end up
-            // with a div in the way. If we try setting all div's background colors, we break
-            // some widgets
-            return (
-                <div className={outputClassNames}>
-                    {this.renderResults()}
-                    <div className="cell-output-ipywidget-background" ref={this.ipyWidgetRef}></div>
-                </div>
-            );
-        }
-        return null;
+        // Then combine them inside a div. IPyWidget ref has to be separate so we don't end up
+        // with a div in the way. If we try setting all div's background colors, we break
+        // some widgets
+        return (
+            <div className={outputClassNames}>
+                {this.renderResults()}
+                <div className="cell-output-ipywidget-background" ref={this.ipyWidgetRef}></div>
+            </div>
+        );
     }
     public componentWillUnmount() {
         this.destroyIPyWidgets();
     }
-    public componentDidMount() {
-        if (!this.isCodeCell() || !this.hasOutput() || !this.getCodeCell().outputs || this.props.hideOutput) {
-            return;
-        }
-    }
-    // tslint:disable-next-line: max-func-body-length
-    public componentDidUpdate(prevProps: ICellOutputProps) {
-        if (!this.isCodeCell() || !this.hasOutput() || !this.getCodeCell().outputs || this.props.hideOutput) {
-            return;
-        }
-        if (fastDeepEqual(this.props, prevProps)) {
-            return;
-        }
-        // Check if outupt has changed.
-        if (
-            prevProps.cellVM.cell.data.cell_type === 'code' &&
-            prevProps.cellVM.cell.state === this.getCell()!.state &&
-            prevProps.hideOutput === this.props.hideOutput &&
-            fastDeepEqual(this.props.cellVM.cell.data, prevProps.cellVM.cell.data)
-        ) {
-            return;
-        }
-    }
-
-    public shouldComponentUpdate(
-        nextProps: Readonly<ICellOutputProps>,
-        _nextState: Readonly<ICellOutputProps>,
-        // tslint:disable-next-line: no-any
-        _nextContext: any
-    ): boolean {
-        if (nextProps === this.props) {
-            return false;
-        }
-        if (nextProps.baseTheme !== this.props.baseTheme) {
-            return true;
-        }
-        if (nextProps.maxTextSize !== this.props.maxTextSize) {
-            return true;
-        }
-        if (nextProps.themeMatplotlibPlots !== this.props.themeMatplotlibPlots) {
-            return true;
-        }
-        // If they are the same, then nothing has changed.
-        // Note, we're using redux, hence we'll never have the same reference object with different property values.
-        if (nextProps.cellVM === this.props.cellVM) {
-            return false;
-        }
-        if (nextProps.cellVM.cell.data.cell_type !== this.props.cellVM.cell.data.cell_type) {
-            return true;
-        }
-        if (nextProps.cellVM.cell.state !== this.props.cellVM.cell.state) {
-            return true;
-        }
-        if (nextProps.cellVM.cell.data.outputs !== this.props.cellVM.cell.data.outputs) {
-            return true;
-        }
-        if (nextProps.cellVM.uiSideError !== this.props.cellVM.uiSideError) {
-            return true;
-        }
-        if (
-            !this.isCodeCell() &&
-            nextProps.cellVM.cell.id !== Identifiers.EditCellId &&
-            nextProps.cellVM.cell.data.source !== this.props.cellVM.cell.data.source
-        ) {
-            return true;
-        }
-
-        return false;
-    }
-    // Public for testing
     public getUnknownMimeTypeFormatString() {
         return getLocString('DataScience.unknownMimeTypeFormat', 'Unknown Mime Type');
     }
@@ -224,29 +191,9 @@ export class CellOutput extends React.Component<ICellOutputProps> {
         });
         this.renderedViews.clear();
     }
-
-    private getCell = () => {
-        return this.props.cellVM.cell;
-    };
-
     private isCodeCell = () => {
-        return this.props.cellVM.cell.data.cell_type === 'code';
-    };
-
-    private hasOutput = () => {
-        return (
-            this.getCell().state === CellState.finished ||
-            this.getCell().state === CellState.error ||
-            this.getCell().state === CellState.executing
-        );
-    };
-
-    private getCodeCell = () => {
-        return this.props.cellVM.cell.data as nbformat.ICodeCell;
-    };
-
-    private getMarkdownCell = () => {
-        return this.props.cellVM.cell.data as nbformat.IMarkdownCell;
+        // tslint:disable-next-line: no-any
+        return !(this.props.output.data as any)['text/markdown'];
     };
 
     private renderResults = (): JSX.Element[] => {
@@ -258,7 +205,7 @@ export class CellOutput extends React.Component<ICellOutputProps> {
                     // tslint:disable-next-line: no-any
                     .map((item) => (item as any) as JSX.Element)
             );
-        } else if (this.props.cellVM.cell.id !== Identifiers.EditCellId) {
+        } else if (!this.isCodeCell()) {
             return this.renderMarkdownOutputs();
         } else {
             return [];
@@ -267,30 +214,16 @@ export class CellOutput extends React.Component<ICellOutputProps> {
 
     private renderCodeOutputs = () => {
         // return [];
-        if (this.isCodeCell() && this.hasOutput() && this.getCodeCell().outputs && !this.props.hideOutput) {
-            const trim = this.props.cellVM.cell.data.metadata.tags ? this.props.cellVM.cell.data.metadata.tags[0] : '';
+        if (this.isCodeCell()) {
             // Render the outputs
-            const outputs = this.renderOutputs(this.getCodeCell().outputs, trim);
-
-            // Render any UI side errors
-            // tslint:disable: react-no-dangerous-html
-            if (this.props.cellVM.uiSideError) {
-                outputs.push(
-                    <div key={'uiError'} className="cell-output-uiSideError">
-                        <div dangerouslySetInnerHTML={{ __html: this.props.cellVM.uiSideError }} />
-                    </div>
-                );
-            }
-
-            return outputs;
+            return this.renderOutputs([this.props.output]);
         }
         return [];
     };
 
     private renderMarkdownOutputs = () => {
-        const markdown = this.getMarkdownCell();
-        // React-markdown expects that the source is a string
-        const source = fixLatexEquations(concatMultilineStringInput(markdown.source));
+        // tslint:disable-next-line: no-any
+        const source = fixLatexEquations((this.props.output as any)['text/markdown']);
         const Transform = getTransform('text/markdown');
         const MarkdownClassName = 'markdown-cell-output';
 
@@ -475,11 +408,11 @@ export class CellOutput extends React.Component<ICellOutputProps> {
     }
 
     // tslint:disable-next-line: max-func-body-length
-    private renderOutputs(outputs: nbformat.IOutput[], trim: string): JSX.Element[] {
-        return [this.renderOutput(outputs, trim)];
+    private renderOutputs(outputs: nbformat.IOutput[]): JSX.Element[] {
+        return [this.renderOutput(outputs)];
     }
 
-    private renderOutput = (outputs: nbformat.IOutput[], trim: string): JSX.Element => {
+    private renderOutput = (outputs: nbformat.IOutput[]): JSX.Element => {
         const buffer: JSX.Element[] = [];
         const transformedList = outputs.map(this.transformOutput.bind(this));
 
@@ -507,22 +440,12 @@ export class CellOutput extends React.Component<ICellOutputProps> {
                         </div>
                     );
                 } else {
-                    if (trim === 'outputPrepend') {
-                        buffer.push(
-                            <div role="group" key={index} onDoubleClick={transformed.doubleClick} className={className}>
-                                {transformed.extraButton}
-                                <TrimmedOutputMessage></TrimmedOutputMessage>
-                                <Transform data={transformed.output.data} />
-                            </div>
-                        );
-                    } else {
-                        buffer.push(
-                            <div role="group" key={index} onDoubleClick={transformed.doubleClick} className={className}>
-                                {transformed.extraButton}
-                                <Transform data={transformed.output.data} />
-                            </div>
-                        );
-                    }
+                    buffer.push(
+                        <div role="group" key={index} onDoubleClick={transformed.doubleClick} className={className}>
+                            {transformed.extraButton}
+                            <Transform data={transformed.output.data} />
+                        </div>
+                    );
                 }
             } else if (
                 !mimetype ||
@@ -592,3 +515,45 @@ export class CellOutput extends React.Component<ICellOutputProps> {
         }
     }
 }
+
+// class Hello extends React.Component<{ data: any }> {
+//   public render() {
+//     const data = this.props.data;
+//     const mimeType = richestMimetype(data, displayOrder, transforms);
+//     const Transform = transforms[mimeType];
+//     let rawData = data[mimeType];
+//     if (Array.isArray(rawData)) {
+//       rawData = rawData.join('');
+//     }
+
+//     return <Transform data={rawData} />;
+//   }
+// }
+
+// window.nteract = {};
+
+// window.nteract.renderTags = () => {
+//   const tags = document.body.querySelectorAll('script[type="application/vnd.nteract.view+json"]');
+//   for (let i = 0; i != tags.length; ++i) {
+//     const viewtag = tags[i];
+//     const viewObject = JSON.parse(viewtag.innerHTML);
+//     const widgetTag = document.createElement('div');
+//     widgetTag.className = 'widget-subarea';
+//     viewtag.parentElement.insertBefore(widgetTag, viewtag);
+//     viewtag.parentElement.removeChild(viewtag);
+
+//     ReactDOM.render(
+//       React.createElement(Hello, {data: viewObject}, null),
+//       widgetTag
+//     );
+//   }
+// };
+
+// window.nteract.renderTags();
+
+// const defaultStyles = document.createElement('style');
+// defaultStyles.id = '_defaultStyles';
+// defaultStyles.innerHTML = `
+// .js-plotly-plot { height: unset !important; }
+// `;
+// document.head.prepend(defaultStyles);

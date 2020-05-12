@@ -115,14 +115,16 @@ export class RawSocket implements IWebSocketLike, IKernelSocket, IDisposable {
         this.sendMessage(data as KernelMessage.IMessage, false);
     }
 
-    public addReceiveHook(hook: (data: WebSocketWS.Data) => Promise<void>): void {
-        this.receiveHooks.push(hook);
+    public addReceiveHook(_hook: (data: WebSocketWS.Data) => Promise<void>): void {
+        // this.receiveHooks.push(hook);
     }
     public removeReceiveHook(hook: (data: WebSocketWS.Data) => Promise<void>): void {
         this.receiveHooks = this.receiveHooks.filter((l) => l !== hook);
     }
-    public addSendHook(hook: (data: any, cb?: ((err?: Error | undefined) => void) | undefined) => Promise<void>): void {
-        this.sendHooks.push(hook);
+    public addSendHook(
+        _hook: (data: any, cb?: ((err?: Error | undefined) => void) | undefined) => Promise<void>
+    ): void {
+        // this.sendHooks.push(hook);
     }
     public removeSendHook(
         hook: (data: any, cb?: ((err?: Error | undefined) => void) | undefined) => Promise<void>

@@ -4,6 +4,8 @@
 'use strict';
 
 import { inject, injectable } from 'inversify';
+import { notebook } from 'vscode';
+// import { notebook } from 'vscode';
 import { IExtensionSingleActivationService } from '../activation/types';
 import '../common/extensions';
 import { IPythonDaemonExecutionService, IPythonExecutionFactory } from '../common/process/types';
@@ -12,6 +14,7 @@ import { debounceAsync, swallowExceptions } from '../common/utils/decorators';
 import { sendTelemetryEvent } from '../telemetry';
 import { JupyterDaemonModule, Telemetry } from './constants';
 import { ActiveEditorContextService } from './context/activeEditorContext';
+import { NativeNotebookEditorProvider } from './interactive-ipynb/nativeNotebookEditorProvider';
 import { JupyterInterpreterService } from './jupyter/interpreter/jupyterInterpreterService';
 import { KernelDaemonPreWarmer } from './kernel-launcher/kernelDaemonPreWarmer';
 import { INotebookAndInteractiveWindowUsageTracker, INotebookEditor, INotebookEditorProvider } from './types';
@@ -27,7 +30,8 @@ export class Activation implements IExtensionSingleActivationService {
         @inject(ActiveEditorContextService) private readonly contextService: ActiveEditorContextService,
         @inject(KernelDaemonPreWarmer) private readonly daemonPoolPrewarmer: KernelDaemonPreWarmer,
         @inject(INotebookAndInteractiveWindowUsageTracker)
-        private readonly tracker: INotebookAndInteractiveWindowUsageTracker
+        private readonly tracker: INotebookAndInteractiveWindowUsageTracker,
+        @inject(NativeNotebookEditorProvider) private readonly notebookProvider: NativeNotebookEditorProvider
     ) {}
     public async activate(): Promise<void> {
         this.disposables.push(this.notebookEditorProvider.onDidOpenNotebookEditor(this.onDidOpenNotebookEditor, this));
@@ -35,6 +39,8 @@ export class Activation implements IExtensionSingleActivationService {
         this.contextService.activate().ignoreErrors();
         this.daemonPoolPrewarmer.activate(undefined).ignoreErrors();
         this.tracker.startTracking();
+        // this.disposables.push(notebook.registerNotebookProvider('jupyter-notebook-renderer', this.notebookProvider));
+        this.disposables.push(notebook.registerNotebookContentProvider('jupyter-notebook-renderer', this.notebookProvider));
     }
 
     private onDidOpenNotebookEditor(_: INotebookEditor) {
