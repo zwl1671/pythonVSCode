@@ -47,23 +47,23 @@ export class NotebookIntegration implements IExtensionSingleActivationService {
             notebook.registerNotebookContentProvider('jupyter-notebook', this.notebookContentProvider)
         );
         this.disposables.push(notebook.registerNotebookKernel('jupyter-notebook', ['**/*.ipynb'], this.notebookKernel));
-        this.disposables.push(
-            notebook.registerNotebookOutputRenderer(
-                'jupyter-notebook-renderer',
-                {
-                    type: 'display_data',
-                    subTypes: [
-                        'image/png',
-                        'image/jpeg',
-                        'text/html',
-                        'text/plain',
-                        'text/latex',
-                        'application/vnd.plotly.v1+json',
-                        'application/vnd.vega.v5+json'
-                    ]
-                },
-                this.renderer
-            )
-        );
+        // this.disposables.push(
+        //     notebook.registerNotebookOutputRenderer(
+        //         'jupyter-notebook-renderer',
+        //         {
+        //             type: 'display_data',
+        //             subTypes: [
+        //                 'image/png',
+        //                 'image/jpeg',
+        //                 'text/html',
+        //                 'text/plain',
+        //                 'text/latex',
+        //                 'application/vnd.plotly.v1+json',
+        //                 'application/vnd.vega.v5+json'
+        //             ]
+        //         },
+        //         this.renderer
+        //     )
+        // );
     }
 }
