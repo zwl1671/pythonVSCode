@@ -7,7 +7,9 @@ export const PYTHON_WARNINGS = 'PYTHONWARNINGS';
 export const PYTHON = [
     { scheme: 'file', language: PYTHON_LANGUAGE },
     { scheme: 'untitled', language: PYTHON_LANGUAGE },
-    { scheme: 'vscode-notebook', language: PYTHON_LANGUAGE }
+    { scheme: 'hello', language: PYTHON_LANGUAGE },
+    { scheme: 'vscode-notebook', language: PYTHON_LANGUAGE },
+    { scheme: 'vscode-notebook-cell', language: PYTHON_LANGUAGE }
 ];
 export const PYTHON_ALLFILES = [{ language: PYTHON_LANGUAGE }];
 
@@ -107,5 +109,6 @@ export function isUnitTestExecution(): boolean {
 
 // Temporary constant, used to indicate whether we're using custom editor api or not.
 export const UseCustomEditorApi = Symbol('USE_CUSTOM_EDITOR');
+export const UseProposedApi = Symbol('USE_VSC_PROPOSED_API');
 
 export * from '../constants';

@@ -794,7 +794,8 @@ export abstract class InteractiveBase extends WebViewHost<IInteractiveWindowMapp
         }
     }
 
-    protected async ensureConnectionAndNotebook(): Promise<void> {
+    // tslint:disable-next-line: member-ordering
+    public async ensureConnectionAndNotebook(): Promise<void> {
         if (!this.connectionAndNotebookPromise) {
             this.connectionAndNotebookPromise = this.ensureConnectionAndNotebookImpl();
         }

@@ -343,6 +343,10 @@ export interface INotebookModelChange {
 export interface INotebookModelSaved extends INotebookModelChange {
     kind: 'save';
 }
+export interface INotebookModelSavedAs extends INotebookModelChange {
+    kind: 'saveAs';
+    target: Uri;
+}
 
 export interface INotebookModelRemoveAllChange extends INotebookModelChange {
     kind: 'remove_all';
@@ -459,6 +463,7 @@ export interface INotebookModelVersionChange extends INotebookModelChange {
 
 export type NotebookModelChange =
     | INotebookModelSaved
+    | INotebookModelSavedAs
     | INotebookModelModifyChange
     | INotebookModelRemoveAllChange
     | INotebookModelClearChange

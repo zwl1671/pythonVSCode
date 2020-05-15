@@ -6,6 +6,7 @@ import { EOL } from 'os';
 import * as vscode from 'vscode';
 import { RestTextConverter } from '../common/markdown/restTextConverter';
 import { JediFactory } from '../languageServices/jediProxyFactory';
+import { traceError } from '../logging';
 import * as proxy from './jediProxy';
 
 export class LanguageItemInfo {
@@ -86,9 +87,17 @@ export class ItemInfoSource implements IItemInfoSource {
         range: vscode.Range,
         token: vscode.CancellationToken
     ): Promise<proxy.IHoverResult | undefined> {
+        let fileName = document.fileName;
+        if (document.uri.scheme === 'vscode-notebook-cell') {
+            try {
+                fileName = vscode.Uri.parse(JSON.parse(document.uri.query).notebook).fsPath;
+            } catch (ex) {
+                traceError(`Failed to parse NotebookCell Uri ${document.uri.toString()}`, ex);
+            }
+        }
         const cmd: proxy.ICommand = {
             command: proxy.CommandType.Hover,
-            fileName: document.fileName,
+            fileName,
             columnIndex: range.end.character,
             lineIndex: range.end.line
         };
