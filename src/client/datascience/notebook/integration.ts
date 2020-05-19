@@ -4,7 +4,7 @@
 import { inject, injectable } from 'inversify';
 import * as path from 'path';
 import { IExtensionSingleActivationService } from '../../activation/types';
-import { ICommandManager, IVSCodeNotebook } from '../../common/application/types';
+import { IApplicationEnvironment, ICommandManager, IVSCodeNotebook } from '../../common/application/types';
 import { UseProposedApi } from '../../common/constants';
 import { NativeNotebook } from '../../common/experimentGroups';
 import { IFileSystem } from '../../common/platform/types';
@@ -33,13 +33,14 @@ export class NotebookIntegration implements IExtensionSingleActivationService {
         @inject(ICommandManager) private readonly commandManager: ICommandManager,
         @inject(NotebookKernel) private readonly notebookKernel: NotebookKernel,
         @inject(IServiceManager) private readonly serviceManager: IServiceManager,
-        @inject(UseProposedApi) private readonly useProposedApi: boolean
+        @inject(UseProposedApi) private readonly useProposedApi: boolean,
+        @inject(IApplicationEnvironment) private readonly appEnv: IApplicationEnvironment
     ) {}
     public async activate(): Promise<void> {
         // This condition is temporary.
-        // If user belongs to the experiment, then make the necessary changes to package.json.
+        // If user belongs to the experiment & is using VSC insiders, then make the necessary changes to package.json.
         // Once the API is final, we won't need to modify the package.json.
-        if (!this.experiment.inExperiment(NativeNotebook.experiment)) {
+        if (!this.experiment.inExperiment(NativeNotebook.experiment) || this.appEnv.channel !== 'insiders') {
             return;
         }
 
